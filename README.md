@@ -1,6 +1,6 @@
 ## PopularMovies
 
-An app that displays popular and latest movies with it's detailed information about it.
+An app that displays popular and top rated movies with it's detailed information about it.
 Uses themoviedb api.
 
 #### For development
