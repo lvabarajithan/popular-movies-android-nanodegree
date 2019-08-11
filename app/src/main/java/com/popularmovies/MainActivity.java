@@ -39,6 +39,8 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.OnC
             public void accept(Boolean isOnline) {
                 if (isOnline) {
                     new MovieListTask(MainActivity.this).execute(Constants.ENDPOINT_POPULAR);
+                } else {
+                    Toast.makeText(MainActivity.this, "No internet connection", Toast.LENGTH_SHORT).show();
                 }
             }
         }).execute();

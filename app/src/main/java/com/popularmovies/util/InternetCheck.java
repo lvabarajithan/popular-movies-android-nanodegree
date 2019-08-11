@@ -29,6 +29,7 @@ public class InternetCheck extends AsyncTask<Void, Void, Boolean> {
         }
         NetworkInfo info = manager.getActiveNetworkInfo();
         if (info == null || !info.isConnected()) {
+            this.consumer.accept(Boolean.FALSE);
             cancel(true);
         }
     }
