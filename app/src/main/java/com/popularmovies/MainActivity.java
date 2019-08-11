@@ -7,6 +7,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.popularmovies.adapter.MoviesAdapter;
@@ -33,18 +35,22 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.OnC
         adapter = new MoviesAdapter(this, this);
         moviesLv.setAdapter(adapter);
 
+        populateMovies(Constants.ENDPOINT_POPULAR);
+
+    }
+
+    private void populateMovies(final String endpointPopular) {
         ConnectivityManager manager = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
         new InternetCheck(manager, new Consumer<Boolean>() {
             @Override
             public void accept(Boolean isOnline) {
                 if (isOnline) {
-                    new MovieListTask(MainActivity.this).execute(Constants.ENDPOINT_POPULAR);
+                    new MovieListTask(MainActivity.this).execute(endpointPopular);
                 } else {
                     Toast.makeText(MainActivity.this, "No internet connection", Toast.LENGTH_SHORT).show();
                 }
             }
         }).execute();
-
     }
 
     @Override
@@ -61,6 +67,27 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.OnC
         } else {
             Toast.makeText(this, "Cannot load movies", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_popular_movies:
+                populateMovies(Constants.ENDPOINT_POPULAR);
+                item.setChecked(true);
+                return true;
+            case R.id.action_top_rated_movies:
+                populateMovies(Constants.ENDPOINT_TOP_RATED);
+                item.setChecked(true);
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
 }
