@@ -4,4 +4,5 @@ An app that displays popular and latest movies with it's detailed information ab
 Uses themoviedb api.
 
 #### For development
+To add the TMBP API key,
 You need to add key-value pair entry with key 'TMDB_API' in gradle.properties file.
