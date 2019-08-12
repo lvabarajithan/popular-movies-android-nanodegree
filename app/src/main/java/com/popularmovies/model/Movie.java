@@ -3,6 +3,7 @@ package com.popularmovies.model;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.google.gson.annotations.SerializedName;
 import com.popularmovies.util.Constants;
 
 /**
@@ -11,9 +12,13 @@ import com.popularmovies.util.Constants;
 public class Movie implements Parcelable {
 
     private String title;
+    @SerializedName("poster_path")
     private String imageUrl;
+    @SerializedName("overview")
     private String synopsis;
+    @SerializedName("vote_average")
     private double rating;
+    @SerializedName("release_date")
     private String releaseDate;
 
     public Movie() {

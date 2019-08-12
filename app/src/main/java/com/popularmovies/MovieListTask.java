@@ -3,14 +3,24 @@ package com.popularmovies;
 import android.net.Uri;
 import android.os.AsyncTask;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.reflect.TypeToken;
+import com.google.gson.stream.JsonReader;
 import com.popularmovies.model.Movie;
 import com.popularmovies.util.Constants;
-import com.popularmovies.util.JsonUtil;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.reflect.Type;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -64,11 +74,15 @@ public class MovieListTask extends AsyncTask<String, Void, List<Movie>> {
             stream = connection.getInputStream();
             String json = readFromStream(stream);
 
-            return JsonUtil.fromJson(json);
-
+            JSONArray results = new JSONObject(json).getJSONArray("results");
+            Type listType = new TypeToken<List<Movie>>() {
+            }.getType();
+            return new Gson().fromJson(results.toString(), listType);
         } catch (MalformedURLException e) {
             e.printStackTrace();
         } catch (IOException e) {
+            e.printStackTrace();
+        } catch (JSONException e) {
             e.printStackTrace();
         } finally {
             if (connection != null) {
