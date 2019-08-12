@@ -3,6 +3,7 @@ package com.popularmovies.adapter;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.AppCompatImageView;
+import android.support.v7.widget.AppCompatTextView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -46,6 +47,7 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MovieHolde
     @Override
     public void onBindViewHolder(@NonNull MovieHolder movieHolder, int position) {
         Movie movie = movieList.get(position);
+        movieHolder.titleTv.setText(movie.getTitle());
         Glide.with(context)
                 .load(movie.getImageUrl())
                 .placeholder(R.drawable.ic_image_placeholder)
@@ -60,10 +62,12 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MovieHolde
 
     class MovieHolder extends RecyclerView.ViewHolder {
         AppCompatImageView moviePosterView;
+        AppCompatTextView titleTv;
 
         MovieHolder(@NonNull View itemView, final OnClickListener listener) {
             super(itemView);
             moviePosterView = itemView.findViewById(R.id.item_main_movie_list_image);
+            titleTv = itemView.findViewById(R.id.item_main_movie_list_title);
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {

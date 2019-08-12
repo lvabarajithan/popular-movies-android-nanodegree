@@ -4,4 +4,6 @@
     <string name="menu_main_top_rated_movies">Top Rated</string>
     <string name="details_movie_rating">%.1f/10</string>
     <string name="details_movie_toolbar_title">Movie details</string>
+    <string name="details_movie_trailers">Trailers:</string>
+    <string name="action_details_share">Share trailer</string>
 </resources>

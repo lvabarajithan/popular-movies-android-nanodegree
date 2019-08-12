@@ -11,7 +11,10 @@ import com.popularmovies.util.Constants;
  */
 public class Movie implements Parcelable {
 
+    private long id;
     private String title;
+    @SerializedName("backdrop_path")
+    private String headerUrl;
     @SerializedName("poster_path")
     private String imageUrl;
     @SerializedName("overview")
@@ -24,16 +27,10 @@ public class Movie implements Parcelable {
     public Movie() {
     }
 
-    public Movie(String title, String imageUrl, String synopsis, double rating, String releaseDate) {
-        this.title = title;
-        this.imageUrl = imageUrl;
-        this.synopsis = synopsis;
-        this.rating = rating;
-        this.releaseDate = releaseDate;
-    }
-
     protected Movie(Parcel in) {
+        id = in.readLong();
         title = in.readString();
+        headerUrl = in.readString();
         imageUrl = in.readString();
         synopsis = in.readString();
         rating = in.readDouble();
@@ -52,12 +49,24 @@ public class Movie implements Parcelable {
         }
     };
 
+    public long getId() {
+        return id;
+    }
+
     public String getTitle() {
         return title;
     }
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    public void setHeaderUrl(String headerUrl) {
+        this.headerUrl = headerUrl;
+    }
+
+    public String getHeaderUrl() {
+        return Constants.IMAGE_URL_PREFIX + headerUrl;
     }
 
     public String getImageUrl() {
@@ -99,7 +108,9 @@ public class Movie implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
+        dest.writeLong(id);
         dest.writeString(title);
+        dest.writeString(headerUrl);
         dest.writeString(imageUrl);
         dest.writeString(synopsis);
         dest.writeDouble(rating);
