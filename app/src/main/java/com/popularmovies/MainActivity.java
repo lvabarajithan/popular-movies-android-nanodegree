@@ -13,13 +13,17 @@ import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.popularmovies.adapter.MoviesAdapter;
+import com.popularmovies.api.ApiResult;
 import com.popularmovies.model.Movie;
+import com.popularmovies.util.AppExecutors;
 import com.popularmovies.util.Constants;
 import com.popularmovies.util.InternetCheck;
 
-import java.util.List;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
-public class MainActivity extends AppCompatActivity implements MoviesAdapter.OnClickListener, OnLoadListener<Movie> {
+public class MainActivity extends AppCompatActivity implements MoviesAdapter.OnClickListener {
 
     private MoviesAdapter adapter;
 
@@ -48,7 +52,7 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.OnC
             @Override
             public void accept(Boolean isOnline) {
                 if (isOnline) {
-                    new MovieListTask(MainActivity.this).execute(endpointPopular);
+                    fetchMovies(endpointPopular);
                 } else {
                     Toast.makeText(MainActivity.this, "No internet connection", Toast.LENGTH_SHORT).show();
                 }
@@ -56,19 +60,37 @@ public class MainActivity extends AppCompatActivity implements MoviesAdapter.OnC
         }).execute();
     }
 
+    private void fetchMovies(final String endpointPopular) {
+        AppExecutors.get().networkIO().execute(new Runnable() {
+            @Override
+            public void run() {
+                MoviesApp.getMoviesService().listMoviesBy(endpointPopular).enqueue(new Callback<ApiResult<Movie>>() {
+                    @Override
+                    public void onResponse(Call<ApiResult<Movie>> call, Response<ApiResult<Movie>> response) {
+                        final ApiResult<Movie> apiResult = response.body();
+                        if (apiResult != null) {
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    adapter.setData(apiResult.getResults());
+                                }
+                            });
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<ApiResult<Movie>> call, Throwable t) {
+                        Toast.makeText(MainActivity.this, "Cannot load movies", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+        });
+    }
+
     @Override
     public void onClick(Movie movie) {
         if (movie != null) {
             MovieDetailsActiviy.start(this, movie);
-        }
-    }
-
-    @Override
-    public void onLoad(List<Movie> list) {
-        if (list != null) {
-            adapter.setData(list);
-        } else {
-            Toast.makeText(this, "Cannot load movies", Toast.LENGTH_SHORT).show();
         }
     }
 

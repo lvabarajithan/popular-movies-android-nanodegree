@@ -144,7 +144,6 @@
                 android:id="@+id/details_movie_trailers_list"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.0"
                 app:layout_constraintStart_toStartOf="parent"
@@ -155,23 +154,13 @@
     </android.support.v4.widget.NestedScrollView>
 
     <android.support.design.widget.FloatingActionButton
-        android:id="@+id/details_movie_play"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        android:clickable="true"
-        android:focusable="true"
-        android:src="@drawable/ic_play_arrow"
-        app:layout_anchor="@id/appbar"
-        app:layout_anchorGravity="bottom|end" />
-
-    <android.support.design.widget.FloatingActionButton
         android:id="@+id/details_movie_favourite"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
         android:layout_margin="16dp"
         android:clickable="true"
         android:focusable="true"
-        android:src="@drawable/ic_favorite_border" />
+        android:src="@drawable/ic_favorite_border"
+        app:layout_anchor="@id/appbar"
+        app:layout_anchorGravity="bottom|end" />
 </android.support.design.widget.CoordinatorLayout>
