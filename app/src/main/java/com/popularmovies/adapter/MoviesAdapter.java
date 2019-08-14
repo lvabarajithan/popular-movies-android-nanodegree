@@ -24,9 +24,9 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MovieHolde
     private Context context;
 
     private List<Movie> movieList;
-    private OnClickListener listener;
+    private OnClickListener<Movie> listener;
 
-    public MoviesAdapter(Context context, OnClickListener listener) {
+    public MoviesAdapter(Context context, OnClickListener<Movie> listener) {
         this.context = context;
         this.movieList = new ArrayList<>();
         this.listener = listener;
@@ -64,7 +64,7 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MovieHolde
         AppCompatImageView moviePosterView;
         AppCompatTextView titleTv;
 
-        MovieHolder(@NonNull View itemView, final OnClickListener listener) {
+        MovieHolder(@NonNull View itemView, final OnClickListener<Movie> listener) {
             super(itemView);
             moviePosterView = itemView.findViewById(R.id.item_main_movie_list_image);
             titleTv = itemView.findViewById(R.id.item_main_movie_list_title);
@@ -75,10 +75,6 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MovieHolde
                 }
             });
         }
-    }
-
-    public interface OnClickListener {
-        public void onClick(Movie movie);
     }
 
 }

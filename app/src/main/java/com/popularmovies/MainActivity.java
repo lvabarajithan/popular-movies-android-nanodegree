@@ -13,6 +13,7 @@ import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.popularmovies.adapter.MoviesAdapter;
+import com.popularmovies.adapter.OnClickListener;
 import com.popularmovies.api.ApiResult;
 import com.popularmovies.model.Movie;
 import com.popularmovies.util.AppExecutors;
@@ -23,7 +24,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class MainActivity extends AppCompatActivity implements MoviesAdapter.OnClickListener {
+public class MainActivity extends AppCompatActivity implements OnClickListener<Movie> {
 
     private MoviesAdapter adapter;
 

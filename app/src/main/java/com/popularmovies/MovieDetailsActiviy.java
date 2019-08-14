@@ -3,9 +3,11 @@ package com.popularmovies;
 import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.ShareCompat;
 import android.support.v4.util.Consumer;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.AppCompatImageView;
@@ -20,12 +22,16 @@ import android.view.View;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.popularmovies.adapter.OnClickListener;
 import com.popularmovies.adapter.TrailersAdapter;
 import com.popularmovies.api.ApiResult;
 import com.popularmovies.model.Movie;
 import com.popularmovies.model.Trailer;
 import com.popularmovies.util.AppExecutors;
+import com.popularmovies.util.Constants;
 import com.popularmovies.util.InternetCheck;
+
+import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -34,7 +40,7 @@ import retrofit2.Response;
 /**
  * Created by Abarajithan
  */
-public class MovieDetailsActiviy extends AppCompatActivity {
+public class MovieDetailsActiviy extends AppCompatActivity implements OnClickListener<Trailer> {
 
     private static final String EXTRA_MOVIE = "movie";
 
@@ -88,7 +94,7 @@ public class MovieDetailsActiviy extends AppCompatActivity {
         trailersList.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         trailersList.setHasFixedSize(true);
 
-        trailersAdapter = new TrailersAdapter(this);
+        trailersAdapter = new TrailersAdapter(this, this);
         trailersList.setAdapter(trailersAdapter);
 
         populateUI(movie);
@@ -168,9 +174,32 @@ public class MovieDetailsActiviy extends AppCompatActivity {
                 finish();
                 return true;
             case R.id.action_details_share:
-                // TODO: Share trailer
+                shareUrl();
                 return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void shareUrl() {
+        List<Trailer> trailerList = trailersAdapter.getData();
+        if (trailerList == null || trailerList.isEmpty()) {
+            return;
+        }
+        String youtubeUrl = Constants.YOUTUBE_PREFIX + trailerList.get(0).getVideoId();
+        String shareText = getString(R.string.details_movie_share_text, movie.getTitle(), youtubeUrl);
+        Intent shareIntent = ShareCompat.IntentBuilder.from(this)
+                .setType("text/plain")
+                .setText(shareText)
+                .getIntent();
+        if (shareIntent.resolveActivity(getPackageManager()) != null) {
+            startActivity(shareIntent);
+        }
+    }
+
+    @Override
+    public void onClick(Trailer trailer) {
+        Uri videoUri = Uri.parse(Constants.YOUTUBE_PREFIX + trailer.getVideoId());
+        Intent videoIntent = new Intent(Intent.ACTION_VIEW, videoUri);
+        startActivity(videoIntent);
     }
 }

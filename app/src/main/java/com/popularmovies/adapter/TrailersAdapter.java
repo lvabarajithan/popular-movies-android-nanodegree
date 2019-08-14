@@ -25,9 +25,12 @@ public class TrailersAdapter extends RecyclerView.Adapter<TrailersAdapter.Traile
     private List<Trailer> trailers;
     private Context context;
 
-    public TrailersAdapter(Context context) {
+    private OnClickListener<Trailer> listener;
+
+    public TrailersAdapter(Context context, OnClickListener<Trailer> listener) {
         this.context = context;
         this.trailers = new ArrayList<>();
+        this.listener = listener;
     }
 
     public void setData(List<Trailer> trailers) {
@@ -35,11 +38,15 @@ public class TrailersAdapter extends RecyclerView.Adapter<TrailersAdapter.Traile
         this.notifyDataSetChanged();
     }
 
+    public List<Trailer> getData() {
+        return this.trailers;
+    }
+
     @NonNull
     @Override
     public TrailerHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
         View view = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.item_details_movie_trailer, viewGroup, false);
-        return new TrailerHolder(view);
+        return new TrailerHolder(view, listener);
     }
 
     @Override
@@ -61,10 +68,17 @@ public class TrailersAdapter extends RecyclerView.Adapter<TrailersAdapter.Traile
         AppCompatImageView trailerImg;
         AppCompatTextView trailerName;
 
-        TrailerHolder(@NonNull View itemView) {
+        TrailerHolder(@NonNull View itemView, final OnClickListener<Trailer> listener) {
             super(itemView);
             trailerImg = itemView.findViewById(R.id.item_details_movie_trailer_img);
             trailerName = itemView.findViewById(R.id.item_details_movie_trailer_name);
+            itemView.findViewById(R.id.item_details_movie_trailer_root)
+                    .setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            listener.onClick(trailers.get(getAdapterPosition()));
+                        }
+                    });
         }
     }
 
