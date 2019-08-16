@@ -55,12 +55,16 @@ public class MovieDetailsActivity extends AppCompatActivity implements OnClickLi
     public static void start(Activity context, Movie movie, View view) {
         Intent starter = new Intent(context, MovieDetailsActivity.class);
         starter.putExtra(EXTRA_MOVIE, movie);
-        ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(
-                context,
-                view,
-                context.getString(R.string.transition_name_movie_poster)
-        );
-        context.startActivity(starter, options.toBundle());
+        if (view != null) {
+            ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(
+                    context,
+                    view,
+                    context.getString(R.string.transition_name_movie_poster)
+            );
+            context.startActivity(starter, options.toBundle());
+        } else {
+            context.startActivity(starter);
+        }
     }
 
     private AppCompatTextView releaseDateTv;

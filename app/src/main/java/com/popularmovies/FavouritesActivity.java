@@ -71,7 +71,7 @@ public class FavouritesActivity extends AppCompatActivity implements OnClickList
 
     @Override
     public void onClick(View root, Movie movie) {
-        MovieDetailsActivity.start(this, movie, root.findViewById(R.id.item_main_movie_list_image));
+        MovieDetailsActivity.start(this, movie, null);
     }
 
 }
