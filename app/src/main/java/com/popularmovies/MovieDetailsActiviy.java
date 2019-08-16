@@ -4,6 +4,7 @@ import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
 import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.Bundle;
@@ -24,6 +25,10 @@ import android.view.View;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.DataSource;
+import com.bumptech.glide.load.engine.GlideException;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.target.Target;
 import com.popularmovies.adapter.OnClickListener;
 import com.popularmovies.adapter.TrailersAdapter;
 import com.popularmovies.api.ApiResult;
@@ -133,13 +138,8 @@ public class MovieDetailsActiviy extends AppCompatActivity implements OnClickLis
         viewModel.getFavoriteLiveData().observe(this, new Observer<Movie>() {
             @Override
             public void onChanged(@Nullable Movie movie) {
-                favFab.show();
                 isFav = movie != null;
-                if (movie != null) {
-                    favFab.setImageResource(R.drawable.ic_favorite);
-                } else {
-                    favFab.setImageResource(R.drawable.ic_favorite_border);
-                }
+                favFab.setImageResource(isFav ? R.drawable.ic_favorite : R.drawable.ic_favorite_border);
             }
         });
     }
@@ -194,9 +194,27 @@ public class MovieDetailsActiviy extends AppCompatActivity implements OnClickLis
                 .load(Constants.IMAGE_URL_PREFIX + movie.getHeaderUrl())
                 .into(headerIv);
 
-        Glide.with(this)
-                .load(movie.getPosterImage() == null ? Constants.IMAGE_URL_PREFIX + movie.getImageUrl() : movie.getPosterImage())
-                .into(posterIv);
+        ConnectivityManager manager = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
+        new InternetCheck(manager, new Consumer<Boolean>() {
+            @Override
+            public void accept(Boolean online) {
+                Glide.with(MovieDetailsActiviy.this)
+                        .load(online ? Constants.IMAGE_URL_PREFIX + movie.getImageUrl() : movie.getPosterImage())
+                        .listener(new RequestListener<Drawable>() {
+                            @Override
+                            public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+                                return false;
+                            }
+
+                            @Override
+                            public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+                                favFab.show();
+                                return false;
+                            }
+                        })
+                        .into(posterIv);
+            }
+        }).execute();
     }
 
     @Override
