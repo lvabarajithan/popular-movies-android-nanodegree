@@ -1,12 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
-    <group android:checkableBehavior="single">
-        <item
-            android:id="@+id/action_popular_movies"
-            android:checked="true"
-            android:title="@string/menu_main_popular_movies" />
-        <item
-            android:id="@+id/action_top_rated_movies"
-            android:title="@string/menu_main_top_rated_movies" />
-    </group>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/action_filter"
+        android:icon="@drawable/ic_filter_main"
+        android:title="@string/action_filters"
+        app:showAsAction="always">
+        <menu>
+            <group android:checkableBehavior="single">
+                <item
+                    android:id="@+id/action_popular_movies"
+                    android:checked="true"
+                    android:title="@string/menu_main_popular_movies" />
+                <item
+                    android:id="@+id/action_top_rated_movies"
+                    android:title="@string/menu_main_top_rated_movies" />
+            </group>
+        </menu>
+    </item>
+    <item
+        android:id="@+id/action_favorites"
+        android:title="@string/action_favorites" />
 </menu>

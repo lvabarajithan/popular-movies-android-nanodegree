@@ -1,5 +1,7 @@
 package com.popularmovies;
 
+import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
@@ -25,11 +27,15 @@ import com.bumptech.glide.Glide;
 import com.popularmovies.adapter.OnClickListener;
 import com.popularmovies.adapter.TrailersAdapter;
 import com.popularmovies.api.ApiResult;
+import com.popularmovies.arch.MovieDetailViewModel;
+import com.popularmovies.arch.MovieDetailViewModelFactory;
+import com.popularmovies.db.MovieDatabase;
 import com.popularmovies.model.Movie;
 import com.popularmovies.model.Trailer;
 import com.popularmovies.util.AppExecutors;
 import com.popularmovies.util.Constants;
 import com.popularmovies.util.InternetCheck;
+import com.popularmovies.util.Utils;
 
 import java.util.List;
 
@@ -62,6 +68,9 @@ public class MovieDetailsActiviy extends AppCompatActivity implements OnClickLis
 
     private Movie movie;
 
+    private MovieDetailViewModel viewModel;
+    private boolean isFav = false;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -76,16 +85,31 @@ public class MovieDetailsActiviy extends AppCompatActivity implements OnClickLis
             finish();
         }
 
+        final MovieDetailViewModelFactory factory = new MovieDetailViewModelFactory(
+                MovieDatabase.get(this),
+                movie.getId()
+        );
+        viewModel = ViewModelProviders.of(this, factory).get(MovieDetailViewModel.class);
+
         releaseDateTv = findViewById(R.id.details_movie_release_date);
         ratingTv = findViewById(R.id.details_movie_ratings);
         descriptionTv = findViewById(R.id.details_movie_description);
         headerIv = findViewById(R.id.details_movie_header);
         posterIv = findViewById(R.id.details_movie_poster);
         favFab = findViewById(R.id.details_movie_favourite);
+        favFab.hide();
+
         favFab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // TODO: Add to favourite
+                if (!isFav) {
+                    movie.setPosterImage(Utils.fromImageView(posterIv));
+                }
+                viewModel.addOrRemoveFav(!isFav, movie);
+                Toast.makeText(MovieDetailsActiviy.this, isFav
+                                ? "Removed from favorites"
+                                : "Added to favorites",
+                        Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -101,7 +125,23 @@ public class MovieDetailsActiviy extends AppCompatActivity implements OnClickLis
         setTitle(movie.getTitle());
 
         populateTrailers();
+        subscribeToFav();
 
+    }
+
+    private void subscribeToFav() {
+        viewModel.getFavoriteLiveData().observe(this, new Observer<Movie>() {
+            @Override
+            public void onChanged(@Nullable Movie movie) {
+                favFab.show();
+                isFav = movie != null;
+                if (movie != null) {
+                    favFab.setImageResource(R.drawable.ic_favorite);
+                } else {
+                    favFab.setImageResource(R.drawable.ic_favorite_border);
+                }
+            }
+        });
     }
 
     private void populateTrailers() {
@@ -145,19 +185,17 @@ public class MovieDetailsActiviy extends AppCompatActivity implements OnClickLis
         });
     }
 
-    private void populateUI(Movie movie) {
-        releaseDateTv.setText(movie.getReleaseDate());
+    private void populateUI(final Movie movie) {
+        releaseDateTv.setText(movie.getReleaseDate().substring(0, movie.getReleaseDate().indexOf("-")));
         ratingTv.setText(getString(R.string.details_movie_rating, movie.getRating()));
         descriptionTv.setText(movie.getSynopsis());
 
         Glide.with(this)
-                .load(movie.getHeaderUrl())
+                .load(Constants.IMAGE_URL_PREFIX + movie.getHeaderUrl())
                 .into(headerIv);
 
         Glide.with(this)
-                .load(movie.getImageUrl())
-                .placeholder(R.drawable.ic_image_placeholder)
-                .error(R.drawable.ic_cloud_off)
+                .load(movie.getPosterImage() == null ? Constants.IMAGE_URL_PREFIX + movie.getImageUrl() : movie.getPosterImage())
                 .into(posterIv);
     }
 

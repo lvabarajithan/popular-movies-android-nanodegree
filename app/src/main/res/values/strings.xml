@@ -7,4 +7,7 @@
     <string name="details_movie_trailers">Trailers:</string>
     <string name="action_details_share">Share trailer</string>
     <string name="details_movie_share_text">Hey, checkout %s\'s trailer.\n\n%s</string>
+    <string name="action_filters">Filters</string>
+    <string name="action_favorites">Favorites</string>
+    <string name="favorites_title">Favorites</string>
 </resources>

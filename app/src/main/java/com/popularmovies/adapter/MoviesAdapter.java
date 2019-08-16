@@ -12,6 +12,7 @@ import android.view.ViewGroup;
 import com.bumptech.glide.Glide;
 import com.popularmovies.R;
 import com.popularmovies.model.Movie;
+import com.popularmovies.util.Constants;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,6 +38,10 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MovieHolde
         this.notifyDataSetChanged();
     }
 
+    public List<Movie> getData() {
+        return movieList;
+    }
+
     @NonNull
     @Override
     public MovieHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
@@ -49,9 +54,7 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MovieHolde
         Movie movie = movieList.get(position);
         movieHolder.titleTv.setText(movie.getTitle());
         Glide.with(context)
-                .load(movie.getImageUrl())
-                .placeholder(R.drawable.ic_image_placeholder)
-                .error(R.drawable.ic_cloud_off)
+                .load(movie.getPosterImage() == null ? Constants.IMAGE_URL_PREFIX + movie.getImageUrl() : movie.getPosterImage())
                 .into(movieHolder.moviePosterView);
     }
 

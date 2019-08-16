@@ -1,28 +1,42 @@
 package com.popularmovies.model;
 
+import android.arch.persistence.room.ColumnInfo;
+import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.PrimaryKey;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
-import com.popularmovies.util.Constants;
 
 /**
  * Created by Abarajithan
  */
+@Entity(tableName = "movies")
 public class Movie implements Parcelable {
 
+    @Expose
+    @PrimaryKey
     private long id;
+    @Expose
     private String title;
+    @Expose
     @SerializedName("backdrop_path")
     private String headerUrl;
+    @Expose
     @SerializedName("poster_path")
     private String imageUrl;
+    @Expose
     @SerializedName("overview")
     private String synopsis;
+    @Expose
     @SerializedName("vote_average")
     private double rating;
+    @Expose
     @SerializedName("release_date")
     private String releaseDate;
+    @ColumnInfo(typeAffinity = ColumnInfo.BLOB)
+    private byte[] posterImage;
 
     public Movie() {
     }
@@ -35,6 +49,11 @@ public class Movie implements Parcelable {
         synopsis = in.readString();
         rating = in.readDouble();
         releaseDate = in.readString();
+        int bytes = in.readInt();
+        if (bytes != 0) {
+            byte posterImage[] = new byte[bytes];
+            in.readByteArray(posterImage);
+        }
     }
 
     public static final Creator<Movie> CREATOR = new Creator<Movie>() {
@@ -48,6 +67,10 @@ public class Movie implements Parcelable {
             return new Movie[size];
         }
     };
+
+    public void setId(long id) {
+        this.id = id;
+    }
 
     public long getId() {
         return id;
@@ -66,11 +89,11 @@ public class Movie implements Parcelable {
     }
 
     public String getHeaderUrl() {
-        return Constants.IMAGE_URL_PREFIX + headerUrl;
+        return headerUrl;
     }
 
     public String getImageUrl() {
-        return Constants.IMAGE_URL_PREFIX + imageUrl;
+        return imageUrl;
     }
 
     public void setImageUrl(String imageUrl) {
@@ -101,6 +124,14 @@ public class Movie implements Parcelable {
         this.releaseDate = releaseDate;
     }
 
+    public void setPosterImage(byte[] posterImage) {
+        this.posterImage = posterImage;
+    }
+
+    public byte[] getPosterImage() {
+        return posterImage;
+    }
+
     @Override
     public int describeContents() {
         return 0;
@@ -115,5 +146,7 @@ public class Movie implements Parcelable {
         dest.writeString(synopsis);
         dest.writeDouble(rating);
         dest.writeString(releaseDate);
+        dest.writeInt(posterImage != null ? posterImage.length : 0);
+        dest.writeByteArray(posterImage);
     }
 }

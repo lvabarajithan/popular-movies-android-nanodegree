@@ -1,7 +1,9 @@
 package com.popularmovies;
 
+import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.v4.util.Consumer;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -19,12 +21,18 @@ import com.popularmovies.model.Movie;
 import com.popularmovies.util.AppExecutors;
 import com.popularmovies.util.Constants;
 import com.popularmovies.util.InternetCheck;
+import com.popularmovies.util.Utils;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity implements OnClickListener<Movie> {
+
+    private static final String EXTRA_MOVIES = "movies_list";
 
     private MoviesAdapter adapter;
 
@@ -37,13 +45,18 @@ public class MainActivity extends AppCompatActivity implements OnClickListener<M
 
         RecyclerView moviesLv = findViewById(R.id.main_movies_list);
         moviesLv.setHasFixedSize(true);
-        moviesLv.setLayoutManager(new GridLayoutManager(this, 2));
+        moviesLv.setLayoutManager(new GridLayoutManager(this, Utils.getSpanCount(this)));
         moviesLv.setItemAnimator(new DefaultItemAnimator());
 
         adapter = new MoviesAdapter(this, this);
         moviesLv.setAdapter(adapter);
 
-        populateMovies(Constants.ENDPOINT_POPULAR);
+        if (savedInstanceState != null) {
+            adapter.setData(savedInstanceState.<Movie>getParcelableArrayList(EXTRA_MOVIES));
+        } else {
+            populateMovies(Constants.ENDPOINT_POPULAR);
+        }
+
 
     }
 
@@ -73,7 +86,12 @@ public class MainActivity extends AppCompatActivity implements OnClickListener<M
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
-                                    adapter.setData(apiResult.getResults());
+                                    List<Movie> movieList = apiResult.getResults();
+                                    if (movieList != null) {
+                                        adapter.setData(movieList);
+                                    } else {
+                                        Toast.makeText(MainActivity.this, "Cannot load movies", Toast.LENGTH_SHORT).show();
+                                    }
                                 }
                             });
                         }
@@ -112,8 +130,16 @@ public class MainActivity extends AppCompatActivity implements OnClickListener<M
                 populateMovies(Constants.ENDPOINT_TOP_RATED);
                 item.setChecked(true);
                 return true;
+            case R.id.action_favorites:
+                startActivity(new Intent(this, FavouritesActivity.class));
+                return true;
         }
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putParcelableArrayList(EXTRA_MOVIES, new ArrayList<Parcelable>(adapter.getData()));
+    }
 }
