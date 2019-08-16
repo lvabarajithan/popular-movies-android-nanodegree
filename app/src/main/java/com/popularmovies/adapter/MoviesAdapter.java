@@ -67,14 +67,14 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.MovieHolde
         AppCompatImageView moviePosterView;
         AppCompatTextView titleTv;
 
-        MovieHolder(@NonNull View itemView, final OnClickListener<Movie> listener) {
+        MovieHolder(@NonNull final View itemView, final OnClickListener<Movie> listener) {
             super(itemView);
             moviePosterView = itemView.findViewById(R.id.item_main_movie_list_image);
             titleTv = itemView.findViewById(R.id.item_main_movie_list_title);
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    listener.onClick(movieList.get(getAdapterPosition()));
+                    listener.onClick(itemView, movieList.get(getAdapterPosition()));
                 }
             });
         }

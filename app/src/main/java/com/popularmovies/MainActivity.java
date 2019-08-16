@@ -13,6 +13,7 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Toast;
 
 import com.popularmovies.adapter.MoviesAdapter;
@@ -77,9 +78,9 @@ public class MainActivity extends AppCompatActivity implements OnClickListener<M
     }
 
     @Override
-    public void onClick(Movie movie) {
+    public void onClick(View root, Movie movie) {
         if (movie != null) {
-            MovieDetailsActivity.start(this, movie);
+            MovieDetailsActivity.start(this, movie, root.findViewById(R.id.item_main_movie_list_image));
         }
     }
 

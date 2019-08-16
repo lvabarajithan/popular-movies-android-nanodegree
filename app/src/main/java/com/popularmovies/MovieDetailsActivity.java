@@ -1,8 +1,8 @@
 package com.popularmovies;
 
+import android.app.Activity;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
-import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.net.ConnectivityManager;
@@ -10,6 +10,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.app.ShareCompat;
 import android.support.v4.util.Consumer;
 import android.support.v7.app.AppCompatActivity;
@@ -51,10 +52,15 @@ public class MovieDetailsActivity extends AppCompatActivity implements OnClickLi
 
     private static final String EXTRA_MOVIE = "movie";
 
-    public static void start(Context context, Movie movie) {
+    public static void start(Activity context, Movie movie, View view) {
         Intent starter = new Intent(context, MovieDetailsActivity.class);
         starter.putExtra(EXTRA_MOVIE, movie);
-        context.startActivity(starter);
+        ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(
+                context,
+                view,
+                context.getString(R.string.transition_name_movie_poster)
+        );
+        context.startActivity(starter, options.toBundle());
     }
 
     private AppCompatTextView releaseDateTv;
@@ -114,7 +120,6 @@ public class MovieDetailsActivity extends AppCompatActivity implements OnClickLi
         headerIv = findViewById(R.id.details_movie_header);
         posterIv = findViewById(R.id.details_movie_poster);
         favFab = findViewById(R.id.details_movie_favourite);
-        favFab.hide();
 
         favFab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -209,7 +214,6 @@ public class MovieDetailsActivity extends AppCompatActivity implements OnClickLi
 
                             @Override
                             public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
-                                favFab.show();
                                 return false;
                             }
                         })
@@ -254,7 +258,7 @@ public class MovieDetailsActivity extends AppCompatActivity implements OnClickLi
     }
 
     @Override
-    public void onClick(Trailer trailer) {
+    public void onClick(View root, Trailer trailer) {
         Uri videoUri = Uri.parse(Constants.YOUTUBE_PREFIX + trailer.getVideoId());
         Intent videoIntent = new Intent(Intent.ACTION_VIEW, videoUri);
         startActivity(videoIntent);

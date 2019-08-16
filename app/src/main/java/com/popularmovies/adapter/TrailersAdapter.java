@@ -68,7 +68,7 @@ public class TrailersAdapter extends RecyclerView.Adapter<TrailersAdapter.Traile
         AppCompatImageView trailerImg;
         AppCompatTextView trailerName;
 
-        TrailerHolder(@NonNull View itemView, final OnClickListener<Trailer> listener) {
+        TrailerHolder(@NonNull final View itemView, final OnClickListener<Trailer> listener) {
             super(itemView);
             trailerImg = itemView.findViewById(R.id.item_details_movie_trailer_img);
             trailerName = itemView.findViewById(R.id.item_details_movie_trailer_name);
@@ -76,7 +76,7 @@ public class TrailersAdapter extends RecyclerView.Adapter<TrailersAdapter.Traile
                     .setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            listener.onClick(trailers.get(getAdapterPosition()));
+                            listener.onClick(itemView, trailers.get(getAdapterPosition()));
                         }
                     });
         }

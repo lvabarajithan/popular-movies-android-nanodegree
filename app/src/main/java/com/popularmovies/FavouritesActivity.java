@@ -10,6 +10,7 @@ import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
+import android.view.View;
 
 import com.popularmovies.adapter.MoviesAdapter;
 import com.popularmovies.adapter.OnClickListener;
@@ -69,8 +70,8 @@ public class FavouritesActivity extends AppCompatActivity implements OnClickList
     }
 
     @Override
-    public void onClick(Movie movie) {
-        MovieDetailsActivity.start(this, movie);
+    public void onClick(View root, Movie movie) {
+        MovieDetailsActivity.start(this, movie, root.findViewById(R.id.item_main_movie_list_image));
     }
 
 }
