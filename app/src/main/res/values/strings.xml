@@ -10,4 +10,6 @@
     <string name="action_filters">Filters</string>
     <string name="action_favorites">Favorites</string>
     <string name="favorites_title">Favorites</string>
+    <string name="details_movie_reviews_btn">Read Reviews</string>
+    <string name="reviews_title">Reviews</string>
 </resources>

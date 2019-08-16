@@ -9,6 +9,7 @@ import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.button.MaterialButton;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ShareCompat;
 import android.support.v4.util.Consumer;
@@ -62,6 +63,7 @@ public class MovieDetailsActivity extends AppCompatActivity implements OnClickLi
     private AppCompatImageView posterIv;
 
     private FloatingActionButton favFab;
+    private MaterialButton reviewsBtn;
 
     private TrailersAdapter trailersAdapter;
 
@@ -90,27 +92,7 @@ public class MovieDetailsActivity extends AppCompatActivity implements OnClickLi
         );
         viewModel = ViewModelProviders.of(this, factory).get(MovieDetailViewModel.class);
 
-        releaseDateTv = findViewById(R.id.details_movie_release_date);
-        ratingTv = findViewById(R.id.details_movie_ratings);
-        descriptionTv = findViewById(R.id.details_movie_description);
-        headerIv = findViewById(R.id.details_movie_header);
-        posterIv = findViewById(R.id.details_movie_poster);
-        favFab = findViewById(R.id.details_movie_favourite);
-        favFab.hide();
-
-        favFab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (!isFav) {
-                    movie.setPosterImage(Utils.fromImageView(posterIv));
-                }
-                viewModel.addOrRemoveFav(!isFav, movie);
-                Toast.makeText(MovieDetailsActivity.this, isFav
-                                ? "Removed from favorites"
-                                : "Added to favorites",
-                        Toast.LENGTH_SHORT).show();
-            }
-        });
+        initViews();
 
         RecyclerView trailersList = findViewById(R.id.details_movie_trailers_list);
         trailersList.setItemAnimator(new DefaultItemAnimator());
@@ -128,6 +110,37 @@ public class MovieDetailsActivity extends AppCompatActivity implements OnClickLi
 
         viewModel.fetchTrailers();
 
+    }
+
+    private void initViews() {
+        releaseDateTv = findViewById(R.id.details_movie_release_date);
+        ratingTv = findViewById(R.id.details_movie_ratings);
+        descriptionTv = findViewById(R.id.details_movie_description);
+        headerIv = findViewById(R.id.details_movie_header);
+        posterIv = findViewById(R.id.details_movie_poster);
+        favFab = findViewById(R.id.details_movie_favourite);
+        reviewsBtn = findViewById(R.id.details_movie_reviews_btn);
+        favFab.hide();
+
+        favFab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (!isFav) {
+                    movie.setPosterImage(Utils.fromImageView(posterIv));
+                }
+                viewModel.addOrRemoveFav(!isFav, movie);
+                Toast.makeText(MovieDetailsActivity.this, isFav
+                                ? "Removed from favorites"
+                                : "Added to favorites",
+                        Toast.LENGTH_SHORT).show();
+            }
+        });
+        reviewsBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ReviewsActivity.start(MovieDetailsActivity.this, movie.getId());
+            }
+        });
     }
 
     private void subscribeToTrailers() {

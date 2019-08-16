@@ -2,6 +2,7 @@ package com.popularmovies.api;
 
 import com.popularmovies.BuildConfig;
 import com.popularmovies.model.Movie;
+import com.popularmovies.model.Review;
 import com.popularmovies.model.Trailer;
 
 import retrofit2.Call;
@@ -18,5 +19,8 @@ public interface MoviesService {
 
     @GET("{movieId}/videos?api_key=" + BuildConfig.TMDB_API)
     Call<ApiResult<Trailer>> getTrailersFor(@Path("movieId") long movieId);
+
+    @GET("{movieId}/reviews?api_key=" + BuildConfig.TMDB_API)
+    Call<ApiResult<Review>> getReviewsFor(@Path("movieId") long movieId);
 
 }

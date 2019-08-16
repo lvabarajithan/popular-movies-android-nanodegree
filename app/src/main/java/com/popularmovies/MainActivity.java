@@ -40,7 +40,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener<M
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = findViewById(R.id.main_toolbar);
+        Toolbar toolbar = findViewById(R.id.reviews_toolbar);
         setSupportActionBar(toolbar);
 
         viewModel = ViewModelProviders.of(this).get(MainViewModel.class);
