@@ -9,7 +9,6 @@ import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.design.button.MaterialButton;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ShareCompat;
 import android.support.v4.util.Consumer;
@@ -31,11 +30,13 @@ import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
 import com.popularmovies.adapter.OnClickListener;
+import com.popularmovies.adapter.ReviewsAdapter;
 import com.popularmovies.adapter.TrailersAdapter;
 import com.popularmovies.arch.MovieDetailViewModel;
 import com.popularmovies.arch.MovieDetailViewModelFactory;
 import com.popularmovies.db.MovieDatabase;
 import com.popularmovies.model.Movie;
+import com.popularmovies.model.Review;
 import com.popularmovies.model.Trailer;
 import com.popularmovies.util.Constants;
 import com.popularmovies.util.InternetCheck;
@@ -63,9 +64,9 @@ public class MovieDetailsActivity extends AppCompatActivity implements OnClickLi
     private AppCompatImageView posterIv;
 
     private FloatingActionButton favFab;
-    private MaterialButton reviewsBtn;
 
     private TrailersAdapter trailersAdapter;
+    private ReviewsAdapter reviewsAdapter;
 
     private Movie movie;
 
@@ -94,21 +95,15 @@ public class MovieDetailsActivity extends AppCompatActivity implements OnClickLi
 
         initViews();
 
-        RecyclerView trailersList = findViewById(R.id.details_movie_trailers_list);
-        trailersList.setItemAnimator(new DefaultItemAnimator());
-        trailersList.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-        trailersList.setHasFixedSize(true);
-
-        trailersAdapter = new TrailersAdapter(this, this);
-        trailersList.setAdapter(trailersAdapter);
-
         populateUI(movie);
         setTitle(movie.getTitle());
 
         subscribeToTrailers();
         subscribeToFav();
+        subscribeToReviews();
 
         viewModel.fetchTrailers();
+        viewModel.fetchReviews();
 
     }
 
@@ -119,7 +114,6 @@ public class MovieDetailsActivity extends AppCompatActivity implements OnClickLi
         headerIv = findViewById(R.id.details_movie_header);
         posterIv = findViewById(R.id.details_movie_poster);
         favFab = findViewById(R.id.details_movie_favourite);
-        reviewsBtn = findViewById(R.id.details_movie_reviews_btn);
         favFab.hide();
 
         favFab.setOnClickListener(new View.OnClickListener() {
@@ -135,10 +129,36 @@ public class MovieDetailsActivity extends AppCompatActivity implements OnClickLi
                         Toast.LENGTH_SHORT).show();
             }
         });
-        reviewsBtn.setOnClickListener(new View.OnClickListener() {
+
+        RecyclerView trailersList = findViewById(R.id.details_movie_trailers_list);
+        trailersList.setItemAnimator(new DefaultItemAnimator());
+        trailersList.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        trailersList.setHasFixedSize(true);
+
+        RecyclerView reviewsList = findViewById(R.id.details_movie_reviews_list);
+        reviewsList.setLayoutManager(new LinearLayoutManager(this));
+        reviewsList.setHasFixedSize(true);
+        reviewsList.setItemAnimator(new DefaultItemAnimator());
+
+        reviewsAdapter = new ReviewsAdapter();
+        reviewsList.setAdapter(reviewsAdapter);
+
+        trailersAdapter = new TrailersAdapter(this, this);
+        trailersList.setAdapter(trailersAdapter);
+    }
+
+    private void subscribeToReviews() {
+        viewModel.getReviewsLiveData().observe(this, new Observer<List<Review>>() {
             @Override
-            public void onClick(View v) {
-                ReviewsActivity.start(MovieDetailsActivity.this, movie.getId());
+            public void onChanged(@Nullable List<Review> reviews) {
+                if (reviews == null) {
+                    Toast.makeText(MovieDetailsActivity.this, "Cannot load reviews", Toast.LENGTH_SHORT).show();
+                } else {
+                    reviewsAdapter.setData(reviews);
+                    if (reviews.isEmpty()) {
+                        Toast.makeText(MovieDetailsActivity.this, "There are no reviews yet", Toast.LENGTH_SHORT).show();
+                    }
+                }
             }
         });
     }

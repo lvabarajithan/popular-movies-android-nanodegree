@@ -9,6 +9,7 @@ import com.popularmovies.api.ApiResult;
 import com.popularmovies.db.MovieDatabase;
 import com.popularmovies.db.dao.MovieDao;
 import com.popularmovies.model.Movie;
+import com.popularmovies.model.Review;
 import com.popularmovies.model.Trailer;
 import com.popularmovies.util.AppExecutors;
 
@@ -25,6 +26,7 @@ public class MovieDetailViewModel extends ViewModel {
 
     private LiveData<Movie> movieLiveData;
     private MutableLiveData<List<Trailer>> trailersLiveData;
+    private MutableLiveData<List<Review>> reviewsLiveData;
 
     private MovieDao movieDao;
 
@@ -35,6 +37,7 @@ public class MovieDetailViewModel extends ViewModel {
         this.movieDao = db.movieDao();
         this.movieLiveData = movieDao.getMovie(movieId);
         this.trailersLiveData = new MutableLiveData<>();
+        this.reviewsLiveData = new MutableLiveData<>();
     }
 
     public LiveData<Movie> getFavoriteLiveData() {
@@ -59,6 +62,30 @@ public class MovieDetailViewModel extends ViewModel {
                     @Override
                     public void onFailure(Call<ApiResult<Trailer>> call, Throwable t) {
                         trailersLiveData.setValue(null);
+                    }
+                });
+            }
+        });
+    }
+
+    public LiveData<List<Review>> getReviewsLiveData() {
+        return reviewsLiveData;
+    }
+
+    public void fetchReviews() {
+        AppExecutors.get().networkIO().execute(new Runnable() {
+            @Override
+            public void run() {
+                MoviesApp.getMoviesService().getReviewsFor(movieId).enqueue(new Callback<ApiResult<Review>>() {
+                    @Override
+                    public void onResponse(Call<ApiResult<Review>> call, Response<ApiResult<Review>> response) {
+                        ApiResult<Review> apiResult = response.body();
+                        reviewsLiveData.setValue(apiResult == null ? null : apiResult.getResults());
+                    }
+
+                    @Override
+                    public void onFailure(Call<ApiResult<Review>> call, Throwable t) {
+                        reviewsLiveData.setValue(null);
                     }
                 });
             }
