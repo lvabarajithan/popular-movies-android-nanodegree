@@ -1,10 +1,11 @@
 package com.popularmovies;
 
+import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
-import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.os.Parcelable;
-import android.support.v4.util.Consumer;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
@@ -16,25 +17,24 @@ import android.widget.Toast;
 
 import com.popularmovies.adapter.MoviesAdapter;
 import com.popularmovies.adapter.OnClickListener;
-import com.popularmovies.api.ApiResult;
+import com.popularmovies.arch.MainViewModel;
 import com.popularmovies.model.Movie;
-import com.popularmovies.util.AppExecutors;
 import com.popularmovies.util.Constants;
-import com.popularmovies.util.InternetCheck;
 import com.popularmovies.util.Utils;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-
 public class MainActivity extends AppCompatActivity implements OnClickListener<Movie> {
 
     private static final String EXTRA_MOVIES = "movies_list";
+    private static final String EXTRA_MOVIE_FILTER = "movie_filter";
 
     private MoviesAdapter adapter;
+
+    private MainViewModel viewModel;
+
+    private int checkedItemId = R.id.action_popular_movies;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,6 +42,8 @@ public class MainActivity extends AppCompatActivity implements OnClickListener<M
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.main_toolbar);
         setSupportActionBar(toolbar);
+
+        viewModel = ViewModelProviders.of(this).get(MainViewModel.class);
 
         RecyclerView moviesLv = findViewById(R.id.main_movies_list);
         moviesLv.setHasFixedSize(true);
@@ -53,55 +55,23 @@ public class MainActivity extends AppCompatActivity implements OnClickListener<M
 
         if (savedInstanceState != null) {
             adapter.setData(savedInstanceState.<Movie>getParcelableArrayList(EXTRA_MOVIES));
+            this.checkedItemId = savedInstanceState.getInt(EXTRA_MOVIE_FILTER);
         } else {
-            populateMovies(Constants.ENDPOINT_POPULAR);
+            viewModel.fetchMovies(Constants.ENDPOINT_POPULAR);
         }
-
+        subscribeToMovies();
 
     }
 
-    private void populateMovies(final String endpointPopular) {
-        ConnectivityManager manager = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
-        new InternetCheck(manager, new Consumer<Boolean>() {
+    private void subscribeToMovies() {
+        viewModel.getMoviesLiveData().observe(this, new Observer<List<Movie>>() {
             @Override
-            public void accept(Boolean isOnline) {
-                if (isOnline) {
-                    fetchMovies(endpointPopular);
+            public void onChanged(@Nullable List<Movie> movieList) {
+                if (movieList != null) {
+                    adapter.setData(movieList);
                 } else {
-                    Toast.makeText(MainActivity.this, "No internet connection", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, "Cannot load movies", Toast.LENGTH_SHORT).show();
                 }
-            }
-        }).execute();
-    }
-
-    private void fetchMovies(final String endpointPopular) {
-        AppExecutors.get().networkIO().execute(new Runnable() {
-            @Override
-            public void run() {
-                MoviesApp.getMoviesService().listMoviesBy(endpointPopular).enqueue(new Callback<ApiResult<Movie>>() {
-                    @Override
-                    public void onResponse(Call<ApiResult<Movie>> call, Response<ApiResult<Movie>> response) {
-                        final ApiResult<Movie> apiResult = response.body();
-                        if (apiResult != null) {
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    List<Movie> movieList = apiResult.getResults();
-                                    if (movieList != null) {
-                                        adapter.setData(movieList);
-                                    } else {
-                                        Toast.makeText(MainActivity.this, "Cannot load movies", Toast.LENGTH_SHORT).show();
-                                    }
-                                }
-                            });
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(Call<ApiResult<Movie>> call, Throwable t) {
-                        Toast.makeText(MainActivity.this, "Cannot load movies", Toast.LENGTH_SHORT).show();
-                    }
-                });
             }
         });
     }
@@ -109,13 +79,14 @@ public class MainActivity extends AppCompatActivity implements OnClickListener<M
     @Override
     public void onClick(Movie movie) {
         if (movie != null) {
-            MovieDetailsActiviy.start(this, movie);
+            MovieDetailsActivity.start(this, movie);
         }
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main, menu);
+        menu.findItem(checkedItemId).setChecked(true);
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -123,12 +94,12 @@ public class MainActivity extends AppCompatActivity implements OnClickListener<M
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_popular_movies:
-                populateMovies(Constants.ENDPOINT_POPULAR);
-                item.setChecked(true);
+                viewModel.fetchMovies(Constants.ENDPOINT_POPULAR);
+                setChecked(item);
                 return true;
             case R.id.action_top_rated_movies:
-                populateMovies(Constants.ENDPOINT_TOP_RATED);
-                item.setChecked(true);
+                viewModel.fetchMovies(Constants.ENDPOINT_TOP_RATED);
+                setChecked(item);
                 return true;
             case R.id.action_favorites:
                 startActivity(new Intent(this, FavouritesActivity.class));
@@ -137,9 +108,15 @@ public class MainActivity extends AppCompatActivity implements OnClickListener<M
         return super.onOptionsItemSelected(item);
     }
 
+    private void setChecked(MenuItem item) {
+        item.setChecked(true);
+        this.checkedItemId = item.getItemId();
+    }
+
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putParcelableArrayList(EXTRA_MOVIES, new ArrayList<Parcelable>(adapter.getData()));
+        outState.putInt(EXTRA_MOVIE_FILTER, checkedItemId);
     }
 }

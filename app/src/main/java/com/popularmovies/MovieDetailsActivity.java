@@ -31,32 +31,26 @@ import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
 import com.popularmovies.adapter.OnClickListener;
 import com.popularmovies.adapter.TrailersAdapter;
-import com.popularmovies.api.ApiResult;
 import com.popularmovies.arch.MovieDetailViewModel;
 import com.popularmovies.arch.MovieDetailViewModelFactory;
 import com.popularmovies.db.MovieDatabase;
 import com.popularmovies.model.Movie;
 import com.popularmovies.model.Trailer;
-import com.popularmovies.util.AppExecutors;
 import com.popularmovies.util.Constants;
 import com.popularmovies.util.InternetCheck;
 import com.popularmovies.util.Utils;
 
 import java.util.List;
 
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-
 /**
  * Created by Abarajithan
  */
-public class MovieDetailsActiviy extends AppCompatActivity implements OnClickListener<Trailer> {
+public class MovieDetailsActivity extends AppCompatActivity implements OnClickListener<Trailer> {
 
     private static final String EXTRA_MOVIE = "movie";
 
     public static void start(Context context, Movie movie) {
-        Intent starter = new Intent(context, MovieDetailsActiviy.class);
+        Intent starter = new Intent(context, MovieDetailsActivity.class);
         starter.putExtra(EXTRA_MOVIE, movie);
         context.startActivity(starter);
     }
@@ -111,7 +105,7 @@ public class MovieDetailsActiviy extends AppCompatActivity implements OnClickLis
                     movie.setPosterImage(Utils.fromImageView(posterIv));
                 }
                 viewModel.addOrRemoveFav(!isFav, movie);
-                Toast.makeText(MovieDetailsActiviy.this, isFav
+                Toast.makeText(MovieDetailsActivity.this, isFav
                                 ? "Removed from favorites"
                                 : "Added to favorites",
                         Toast.LENGTH_SHORT).show();
@@ -129,9 +123,24 @@ public class MovieDetailsActiviy extends AppCompatActivity implements OnClickLis
         populateUI(movie);
         setTitle(movie.getTitle());
 
-        populateTrailers();
+        subscribeToTrailers();
         subscribeToFav();
 
+        viewModel.fetchTrailers();
+
+    }
+
+    private void subscribeToTrailers() {
+        viewModel.getTrailersLiveData().observe(this, new Observer<List<Trailer>>() {
+            @Override
+            public void onChanged(@Nullable List<Trailer> trailers) {
+                if (trailers != null) {
+                    trailersAdapter.setData(trailers);
+                } else {
+                    Toast.makeText(MovieDetailsActivity.this, "Cannot load trailers", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
     }
 
     private void subscribeToFav() {
@@ -140,47 +149,6 @@ public class MovieDetailsActiviy extends AppCompatActivity implements OnClickLis
             public void onChanged(@Nullable Movie movie) {
                 isFav = movie != null;
                 favFab.setImageResource(isFav ? R.drawable.ic_favorite : R.drawable.ic_favorite_border);
-            }
-        });
-    }
-
-    private void populateTrailers() {
-        ConnectivityManager manager = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
-        new InternetCheck(manager, new Consumer<Boolean>() {
-            @Override
-            public void accept(Boolean isOnline) {
-                if (isOnline) {
-                    fetchTrailers();
-                } else {
-                    Toast.makeText(MovieDetailsActiviy.this, "No internet connection", Toast.LENGTH_SHORT).show();
-                }
-            }
-        }).execute();
-    }
-
-    private void fetchTrailers() {
-        AppExecutors.get().networkIO().execute(new Runnable() {
-            @Override
-            public void run() {
-                MoviesApp.getMoviesService().getTrailersFor(movie.getId()).enqueue(new Callback<ApiResult<Trailer>>() {
-                    @Override
-                    public void onResponse(Call<ApiResult<Trailer>> call, Response<ApiResult<Trailer>> response) {
-                        final ApiResult<Trailer> apiResult = response.body();
-                        if (apiResult != null) {
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    trailersAdapter.setData(apiResult.getResults());
-                                }
-                            });
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(Call<ApiResult<Trailer>> call, Throwable t) {
-                        Toast.makeText(MovieDetailsActiviy.this, "Cannot load trailers", Toast.LENGTH_SHORT).show();
-                    }
-                });
             }
         });
     }
@@ -198,7 +166,7 @@ public class MovieDetailsActiviy extends AppCompatActivity implements OnClickLis
         new InternetCheck(manager, new Consumer<Boolean>() {
             @Override
             public void accept(Boolean online) {
-                Glide.with(MovieDetailsActiviy.this)
+                Glide.with(MovieDetailsActivity.this)
                         .load(online ? Constants.IMAGE_URL_PREFIX + movie.getImageUrl() : movie.getPosterImage())
                         .listener(new RequestListener<Drawable>() {
                             @Override

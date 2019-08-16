@@ -1,12 +1,22 @@
 package com.popularmovies.arch;
 
 import android.arch.lifecycle.LiveData;
+import android.arch.lifecycle.MutableLiveData;
 import android.arch.lifecycle.ViewModel;
 
+import com.popularmovies.MoviesApp;
+import com.popularmovies.api.ApiResult;
 import com.popularmovies.db.MovieDatabase;
 import com.popularmovies.db.dao.MovieDao;
 import com.popularmovies.model.Movie;
+import com.popularmovies.model.Trailer;
 import com.popularmovies.util.AppExecutors;
+
+import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 /**
  * Created by Abarajithan
@@ -14,15 +24,45 @@ import com.popularmovies.util.AppExecutors;
 public class MovieDetailViewModel extends ViewModel {
 
     private LiveData<Movie> movieLiveData;
+    private MutableLiveData<List<Trailer>> trailersLiveData;
+
     private MovieDao movieDao;
 
+    private long movieId;
+
     public MovieDetailViewModel(MovieDatabase db, long movieId) {
+        this.movieId = movieId;
         this.movieDao = db.movieDao();
         this.movieLiveData = movieDao.getMovie(movieId);
+        this.trailersLiveData = new MutableLiveData<>();
     }
 
     public LiveData<Movie> getFavoriteLiveData() {
         return movieLiveData;
+    }
+
+    public LiveData<List<Trailer>> getTrailersLiveData() {
+        return trailersLiveData;
+    }
+
+    public void fetchTrailers() {
+        AppExecutors.get().networkIO().execute(new Runnable() {
+            @Override
+            public void run() {
+                MoviesApp.getMoviesService().getTrailersFor(movieId).enqueue(new Callback<ApiResult<Trailer>>() {
+                    @Override
+                    public void onResponse(Call<ApiResult<Trailer>> call, Response<ApiResult<Trailer>> response) {
+                        final ApiResult<Trailer> apiResult = response.body();
+                        trailersLiveData.setValue(apiResult != null ? apiResult.getResults() : null);
+                    }
+
+                    @Override
+                    public void onFailure(Call<ApiResult<Trailer>> call, Throwable t) {
+                        trailersLiveData.setValue(null);
+                    }
+                });
+            }
+        });
     }
 
     public void addOrRemoveFav(boolean add, Movie movie) {

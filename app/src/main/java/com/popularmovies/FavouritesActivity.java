@@ -70,7 +70,7 @@ public class FavouritesActivity extends AppCompatActivity implements OnClickList
 
     @Override
     public void onClick(Movie movie) {
-        MovieDetailsActiviy.start(this, movie);
+        MovieDetailsActivity.start(this, movie);
     }
 
 }

@@ -7,7 +7,7 @@
         android:title="@string/action_filters"
         app:showAsAction="always">
         <menu>
-            <group android:checkableBehavior="single">
+            <group android:id="@+id/action_group_filters" android:checkableBehavior="single">
                 <item
                     android:id="@+id/action_popular_movies"
                     android:checked="true"
