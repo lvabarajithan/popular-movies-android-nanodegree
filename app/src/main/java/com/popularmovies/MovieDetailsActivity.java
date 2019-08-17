@@ -196,7 +196,7 @@ public class MovieDetailsActivity extends AppCompatActivity implements OnClickLi
     }
 
     private void populateUI(final Movie movie) {
-        releaseDateTv.setText(movie.getReleaseDate().substring(0, movie.getReleaseDate().indexOf("-")));
+        releaseDateTv.setText(movie.getReleaseDate());
         ratingTv.setText(getString(R.string.details_movie_rating, movie.getRating()));
         descriptionTv.setText(movie.getSynopsis());
 

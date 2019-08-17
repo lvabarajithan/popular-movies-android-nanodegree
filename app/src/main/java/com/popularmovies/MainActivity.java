@@ -2,7 +2,6 @@ package com.popularmovies;
 
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
-import android.content.Intent;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.annotation.Nullable;
@@ -61,7 +60,17 @@ public class MainActivity extends AppCompatActivity implements OnClickListener<M
             viewModel.fetchMovies(Constants.ENDPOINT_POPULAR);
         }
         subscribeToMovies();
+        subscribeToFavorites();
 
+    }
+
+    private void subscribeToFavorites() {
+        viewModel.getFavoritesLiveData().observe(this, new Observer<List<Movie>>() {
+            @Override
+            public void onChanged(@Nullable List<Movie> movies) {
+                adapter.setData(movies);
+            }
+        });
     }
 
     private void subscribeToMovies() {
@@ -103,7 +112,8 @@ public class MainActivity extends AppCompatActivity implements OnClickListener<M
                 setChecked(item);
                 return true;
             case R.id.action_favorites:
-                startActivity(new Intent(this, FavouritesActivity.class));
+                viewModel.fetchFavorites();
+                setChecked(item);
                 return true;
         }
         return super.onOptionsItemSelected(item);
