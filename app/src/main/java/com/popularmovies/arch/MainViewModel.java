@@ -1,9 +1,11 @@
 package com.popularmovies.arch;
 
 import android.app.Application;
+import android.arch.core.util.Function;
 import android.arch.lifecycle.AndroidViewModel;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
+import android.arch.lifecycle.Transformations;
 
 import com.popularmovies.MoviesApp;
 import com.popularmovies.api.ApiResult;
@@ -23,7 +25,7 @@ import retrofit2.Response;
 public class MainViewModel extends AndroidViewModel {
 
     private MutableLiveData<List<Movie>> moviesLiveData;
-    private MutableLiveData<List<Movie>> favoritesLiveData;
+    private MutableLiveData<String> moviesSourceLiveData;
 
     private MovieDatabase db;
 
@@ -31,18 +33,26 @@ public class MainViewModel extends AndroidViewModel {
         super(application);
         db = MovieDatabase.get(application);
         this.moviesLiveData = new MutableLiveData<>();
-        this.favoritesLiveData = new MutableLiveData<>();
+        this.moviesSourceLiveData = new MutableLiveData<>();
     }
 
     public LiveData<List<Movie>> getMoviesLiveData() {
-        return moviesLiveData;
+        return Transformations.switchMap(moviesSourceLiveData, new Function<String, LiveData<List<Movie>>>() {
+            @Override
+            public LiveData<List<Movie>> apply(String endpoint) {
+                if (endpoint == null) {
+                    return db.movieDao().getAll();
+                }
+                return fetchMovies(endpoint);
+            }
+        });
     }
 
-    public LiveData<List<Movie>> getFavoritesLiveData() {
-        return favoritesLiveData;
+    public void setSource(String endpoint) {
+        this.moviesSourceLiveData.setValue(endpoint);
     }
 
-    public void fetchMovies(final String endpoint) {
+    private LiveData<List<Movie>> fetchMovies(final String endpoint) {
         AppExecutors.get().networkIO().execute(new Runnable() {
             @Override
             public void run() {
@@ -60,15 +70,7 @@ public class MainViewModel extends AndroidViewModel {
                 });
             }
         });
-    }
-
-    public void fetchFavorites() {
-        AppExecutors.get().diskIO().execute(new Runnable() {
-            @Override
-            public void run() {
-                favoritesLiveData.postValue(db.movieDao().getAll());
-            }
-        });
+        return moviesLiveData;
     }
 
 }

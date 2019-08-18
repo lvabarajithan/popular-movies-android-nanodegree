@@ -57,20 +57,10 @@ public class MainActivity extends AppCompatActivity implements OnClickListener<M
             adapter.setData(savedInstanceState.<Movie>getParcelableArrayList(EXTRA_MOVIES));
             this.checkedItemId = savedInstanceState.getInt(EXTRA_MOVIE_FILTER);
         } else {
-            viewModel.fetchMovies(Constants.ENDPOINT_POPULAR);
+            viewModel.setSource(Constants.ENDPOINT_POPULAR);
         }
         subscribeToMovies();
-        subscribeToFavorites();
 
-    }
-
-    private void subscribeToFavorites() {
-        viewModel.getFavoritesLiveData().observe(this, new Observer<List<Movie>>() {
-            @Override
-            public void onChanged(@Nullable List<Movie> movies) {
-                adapter.setData(movies);
-            }
-        });
     }
 
     private void subscribeToMovies() {
@@ -104,15 +94,15 @@ public class MainActivity extends AppCompatActivity implements OnClickListener<M
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_popular_movies:
-                viewModel.fetchMovies(Constants.ENDPOINT_POPULAR);
+                viewModel.setSource(Constants.ENDPOINT_POPULAR);
                 setChecked(item);
                 return true;
             case R.id.action_top_rated_movies:
-                viewModel.fetchMovies(Constants.ENDPOINT_TOP_RATED);
+                viewModel.setSource(Constants.ENDPOINT_TOP_RATED);
                 setChecked(item);
                 return true;
             case R.id.action_favorites:
-                viewModel.fetchFavorites();
+                viewModel.setSource(null);
                 setChecked(item);
                 return true;
         }

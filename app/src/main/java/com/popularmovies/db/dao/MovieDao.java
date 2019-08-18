@@ -17,7 +17,7 @@ import java.util.List;
 public interface MovieDao {
 
     @Query("SELECT * FROM movies")
-    public List<Movie> getAll();
+    public LiveData<List<Movie>> getAll();
 
     @Insert
     public long insertMovie(Movie movie);
